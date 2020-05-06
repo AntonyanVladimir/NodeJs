@@ -1,8 +1,25 @@
 const Joi = require('joi');
 const express = require('express');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const app = express();
 
+console.log(`node env: ${process.env.NODE_ENV}`);
+console.log(`appEnv: ${app.get('env')}`);
+
+
+app.use(helmet());
 app.use(express.json());
+app.use(express.urlencoded({extended:true}));
+app.use(express.static('./public'));
+
+if(app.get('env')==='development'){
+    app.use(morgan('tiny'));
+    console.log('Morgan is enabled...')
+}
+
+
+
 
 const courses = [
     {id:1, name:'course1'},
@@ -86,3 +103,5 @@ function validateCourse(course){
         }
         return Joi.validate(course, schema);
 }
+
+
