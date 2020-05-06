@@ -20,15 +20,11 @@ app.get('/api/courses', (req, res)=>{
 
 //POST
 app.post('/api/courses', (req, res)=>{
-    const schema = {
-        name:Joi.string().min(3).required()
-    }
-    const result = Joi.validate(req.body, schema);
-    
-    if(result.error){
+    const {error} = validateCourse(req.body) 
+    if(error)
         //400 Bad Request
-        res.status(400).send(result.error.details[0].message);
-    }
+        return res.status(400).send(result.error.details[0].message);
+    
     const course = {
         id:courses.length+1,
         name:req.body.name
@@ -44,4 +40,49 @@ app.get('/api/courses/:id', (req, res)=>{
    if(!course) res.status(404).send('The course wasnt found..');
    else res.send(course);
 });
+
+//PUT (update)
+app.put('/api/courses/:id', (req, res)=>{
+    //find course
+    //if not existiong 404
+    //Validate
+    //if invalid, return 400-Bad request
+
+    const course = courses.find(c=>c.id === parseInt(req.params.id));
+    if(!course) {
+        res.status(404).send('The course wasnt found..');
+        return;
+    }
+    const {error} = validateCourse(req.body) 
+        if(error){
+            //400 Bad Request
+            res.status(400).send(result.error.details[0].message);
+        }
+
+course.name = req.body.name;
+res.send(course);
+
+});
+
+
+//HTTP delete request
+app.delete('/api/courses/:id', (req, res)=>{
+    const course = courses.find(c=>c.id === parseInt(req.params.id));
+    if(!course) return res.status(404).send('The course wasnt found..');
+
+    //Delete
+    const index = courses.indexOf(course);
+    courses.splice(index, 1);
+
+    res.send(course);
+});
+
 app.listen(port, ()=> console.log(`Listening ${port}...`));
+
+
+function validateCourse(course){
+    const schema = {
+        name:Joi.string().min(3).required()
+        }
+        return Joi.validate(course, schema);
+}
